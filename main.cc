@@ -3,29 +3,29 @@
 #include <sstream>
 #include <exception>
 #include <iomanip>
-#include <vector>
+#include <set>
 #include <map>
 #include <algorithm>
 
 class Date {
  public:
   explicit Date(const std::string& date) {
-      std::istringstream buffer(date);
+      std::istringstream ss(date);
       int _year, _month, _day;
-      buffer >> _year;
-      if (buffer.peek() != '-') {
+      ss >> _year;
+      if (ss.peek() != '-') {
           throw std::runtime_error("Wrong date format: "+date);
       }
-      buffer.ignore(1);
-      buffer >> _month;
-      if (buffer.peek() != '-') {
+      ss.ignore(1);
+      ss >> _month;
+      if (ss.peek() != '-') {
           throw std::runtime_error("Wrong date format: "+date);
       }
       if ((_month < 1) || (_month > 12)) {
           throw std::runtime_error("Month value is invalid: "+std::to_string(_month));
       }
-      buffer.ignore(1);
-      buffer >> _day;
+      ss.ignore(1);
+      ss >> _day;
       if ((_day < 1) || (_day > 31)) {
           throw std::runtime_error("Day value is invalid: "+std::to_string(_day));
       }
@@ -44,11 +44,11 @@ class Date {
       return day;
   }
   std::string GetDate() const {
-      std::ostringstream buffer;
-      buffer << std::setfill('0') << std::setw(4) << year << '-';
-      buffer << std::setfill('0') << std::setw(2) << month << '-';
-      buffer << std::setfill('0') << std::setw(2) << day;
-      return buffer.str();
+      std::ostringstream ss;
+      ss << std::setfill('0') << std::setw(4) << year << '-'
+                                  << std::setw(2) << month << '-'
+                                  << std::setw(2) << day;
+      return ss.str();
   }
  private:
   int year = 0;
@@ -63,23 +63,16 @@ bool operator<(const Date& lhs, const Date& rhs) {
 class Database {
  public:
   void AddEvent(const Date& date, const std::string& event) {
-      if (db.count(date) > 0) {
-          if (std::find(db[date].begin(), db[date].end(), event) == db[date].end()) {
-              db[date].push_back(event);
-          }
-      } else {
-          db[date].push_back(event);
-      }
+      db[date].insert(event);
   }
   bool DeleteEvent(const Date& date, const std::string& event) {
       if (db.count(date) > 0) {
-          std::vector<std::string>::iterator element = std::find(db[date].begin(), db[date].end(), event);
+          std::set<std::string>::iterator element = db[date].find(event);
           if (element != db[date].end()) {
               db[date].erase(element);
               return true;
-          } else {
-              return false;
           }
+          return false;
       }
       return false;
   }
@@ -93,9 +86,7 @@ class Database {
   }
 
   void Find(const Date& date) const {
-      std::vector<std::string> el = db.at(date);
-      std::sort(el.begin(), el.end());
-      for (const std::string& i : el) {
+      for (const std::string& i : db.at(date)) {
           std::cout << i << std::endl;
       }
   }
@@ -108,7 +99,7 @@ class Database {
       }
   }
  private:
-  std::map<Date, std::vector<std::string>> db;
+  std::map<Date, std::set<std::string>> db;
 };
 
 int main() {
@@ -125,7 +116,7 @@ int main() {
               db.AddEvent(Date(date), event);
           } else if (command == "Del") {
               ss >> date >> event;
-              if (event[0] == char(0)) {
+              if (!event.empty()) {
                   if (db.DeleteEvent(Date(date), event)) {
                       std::cout << "Deleted successfully" << std::endl;
                   } else {
