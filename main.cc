@@ -108,7 +108,9 @@ int main() {
   std::string str;
   std::string command, date, event;
   while (getline(std::cin, str)) {
-      std::istringstream ss(str);
+      std::stringstream ss(str);
+      date = "";
+      event = "";
       ss >> command;
       try {
           if (command == "Add") {
@@ -116,14 +118,14 @@ int main() {
               db.AddEvent(Date(date), event);
           } else if (command == "Del") {
               ss >> date >> event;
-              if (!event.empty()) {
+              if (event.empty()) {
+                  std::cout << "Deleted " << db.DeleteDate(Date(date)) << " events" << std::endl;
+              } else {
                   if (db.DeleteEvent(Date(date), event)) {
                       std::cout << "Deleted successfully" << std::endl;
                   } else {
                       std::cout << "Event not found" << std::endl;
                   }
-              } else {
-                  std::cout << "Deleted " << db.DeleteDate(Date(date)) << " events" << std::endl;
               }
           } else if (command == "Find") {
               ss >> date;
@@ -136,8 +138,7 @@ int main() {
               }
           }
       }
-      catch(const std::exception& e)
-      {
+      catch(const std::exception& e) {
           std::cout << e.what() << '\n';
       }
       
