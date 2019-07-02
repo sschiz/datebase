@@ -106,11 +106,9 @@ int main() {
   Database db;
     
   std::string str;
-  std::string command, date, event;
   while (getline(std::cin, str)) {
       std::stringstream ss(str);
-      date = "";
-      event = "";
+      std::string command, date, event;
       ss >> command;
       try {
           if (command == "Add") {
@@ -133,7 +131,7 @@ int main() {
           } else if (command == "Print") {
               db.Print();
           } else {
-              if (command[0] != char(0)) {
+              if (!command.empty()) {
                   std::cout << "Unknown command: " << command << std::endl;
               }
           }
