@@ -125,10 +125,14 @@ int main() {
               db.AddEvent(Date(date), event);
           } else if (command == "Del") {
               ss >> date >> event;
-              if (event[0]) {
-                  db.DeleteEvent(Date(date), event);
+              if (event[0] == char(0)) {
+                  if (db.DeleteEvent(Date(date), event)) {
+                      std::cout << "Deleted successfully" << std::endl;
+                  } else {
+                      std::cout << "Event not found" << std::endl;
+                  }
               } else {
-                  db.DeleteDate(Date(date));
+                  std::cout << "Deleted " << db.DeleteDate(Date(date)) << " events" << std::endl;
               }
           } else if (command == "Find") {
               ss >> date;
